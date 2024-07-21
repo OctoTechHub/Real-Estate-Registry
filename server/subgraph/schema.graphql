@@ -1,0 +1,94 @@
+type Confirmation @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  operation: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Revoke @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  operation: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnerChanged @entity(immutable: true) {
+  id: Bytes!
+  oldOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnerAdded @entity(immutable: true) {
+  id: Bytes!
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnerRemoved @entity(immutable: true) {
+  id: Bytes!
+  oldOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RequirementChanged @entity(immutable: true) {
+  id: Bytes!
+  newRequirement: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Deposit @entity(immutable: true) {
+  id: Bytes!
+  _from: Bytes! # address
+  value: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type SingleTransact @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  value: BigInt! # uint256
+  to: Bytes! # address
+  data: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type MultiTransact @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  operation: Bytes! # bytes32
+  value: BigInt! # uint256
+  to: Bytes! # address
+  data: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ConfirmationNeeded @entity(immutable: true) {
+  id: Bytes!
+  operation: Bytes! # bytes32
+  initiator: Bytes! # address
+  value: BigInt! # uint256
+  to: Bytes! # address
+  data: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

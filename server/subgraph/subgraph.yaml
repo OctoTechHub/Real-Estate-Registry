@@ -1,0 +1,53 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Contract
+    network: mainnet
+    source:
+      address: "0xde0B295669a9FD93d5F28D9Ec85E40f4cb697BAe"
+      abi: Contract
+      startBlock: 54092
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Confirmation
+        - Revoke
+        - OwnerChanged
+        - OwnerAdded
+        - OwnerRemoved
+        - RequirementChanged
+        - Deposit
+        - SingleTransact
+        - MultiTransact
+        - ConfirmationNeeded
+      abis:
+        - name: Contract
+          file: ./abis/Contract.json
+      eventHandlers:
+        - event: Confirmation(address,bytes32)
+          handler: handleConfirmation
+        - event: Revoke(address,bytes32)
+          handler: handleRevoke
+        - event: OwnerChanged(address,address)
+          handler: handleOwnerChanged
+        - event: OwnerAdded(address)
+          handler: handleOwnerAdded
+        - event: OwnerRemoved(address)
+          handler: handleOwnerRemoved
+        - event: RequirementChanged(uint256)
+          handler: handleRequirementChanged
+        - event: Deposit(address,uint256)
+          handler: handleDeposit
+        - event: SingleTransact(address,uint256,address,bytes)
+          handler: handleSingleTransact
+        - event: MultiTransact(address,bytes32,uint256,address,bytes)
+          handler: handleMultiTransact
+        - event: ConfirmationNeeded(bytes32,address,uint256,address,bytes)
+          handler: handleConfirmationNeeded
+      file: ./src/contract.ts
