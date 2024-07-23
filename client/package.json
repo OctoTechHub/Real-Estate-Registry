@@ -16,12 +16,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ethersproject/providers": "^5.7.2",
     "@tanstack/react-query": "^5.28.9",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.25.1"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.2",
