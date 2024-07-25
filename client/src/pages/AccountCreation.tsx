@@ -78,7 +78,8 @@ export default function AccountCreate() {
       }}
     >
       <div className="bg-opacity-60 bg-gray-800 p-6 rounded-md shadow-lg">
-        <h1 className="text-3xl text-white mb-6">Get Started With GP Registry</h1>
+        <h1 className="text-3xl text-white mb-6">Get Your Real Estate Registry
+        </h1>
         {account ? (
           <p className="text-lg text-white">Connected account: {account}</p>
         ) : (
@@ -95,7 +96,7 @@ export default function AccountCreate() {
         {account && (
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 mt-4"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 mt-4  "
           >
             Go to Dashboard
           </button>

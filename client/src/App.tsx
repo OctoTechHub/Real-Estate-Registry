@@ -1,22 +1,33 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Outlet, Navigate } from 'react-router-dom';
 import AccountCreation from './pages/AccountCreation';
 import PropertyDetail from './components/PropertyDetail';
 import { GraphQueries } from './pages/GraphQueries';
 import Dashboard from './pages/dashboard';
 
-function App() {
-  return (
-    <Router>
-      <main className="h-full min-h-screen mx-auto max-w-7xl mt-10 flex flex-col gap-y-24">
-        <Routes>
-          <Route path="/" element={<AccountCreation />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/queries" element={<GraphQueries/>} />
-          <Route path="/properties/:id" element={<PropertyDetail/>} />
+const ProtectedRoute = () => {
+  const walletAddress = localStorage.getItem('walletAddress');
 
-        </Routes>
-      </main>
-    </Router>
+  return walletAddress ? <Outlet /> : <Navigate to="/" />;
+};
+
+
+function App() {
+   
+    return (
+      <Router>
+        <main className="h-full min-h-screen mx-auto max-w-7xl mt-10 flex flex-col gap-y-24">
+          <Routes>
+            <Route path="/" element={<AccountCreation />} />
+            
+            <Route element={<ProtectedRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/queries" element={<GraphQueries />} />
+              <Route path="/properties/:id" element={<PropertyDetail />} />
+            </Route>
+            
+          </Routes>
+        </main>
+      </Router>
   );
 }
 

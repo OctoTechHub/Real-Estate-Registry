@@ -3,9 +3,36 @@ const mongoose = require('mongoose');
 const axios = require('axios');
 const { request, gql } = require('graphql-request');
 const cors = require('cors');
+const ethers = require('ethers');
+
+const provider = new ethers.providers.JsonRpcProvider("https://mainnet.infura.io/v3/e384c527dbbb48b6a58a975f4dcfd341");
+const signer = provider.getSigner();
+const propertyRegistryAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+
+const propertyRegistryAbi = [
+  "function registerProperty(string memory _description) public",
+  "function transferProperty(uint256 _propertyId, address _newOwner) public",
+  "function getProperty(uint256 _propertyId) public view returns (tuple(uint256 id, string description, address owner))"
+];
+
+const propertyRegistryContract = new ethers.Contract(propertyRegistryAddress, propertyRegistryAbi, signer);
+
+async function registerProperty(description) {
+  const tx = await propertyRegistryContract.registerProperty(description);
+  await tx.wait();
+  console.log(`Property registered with description: ${description}`);
+}
+
+async function transferProperty(propertyId, newOwner) {
+  const tx = await propertyRegistryContract.transferProperty(propertyId, newOwner);
+  await tx.wait();
+  console.log(`Property ${propertyId} transferred to ${newOwner}`);
+}
+
 const app = express();
 app.use(express.json());
 app.use(cors());
+
 mongoose.connect('mongodb+srv://krishsoni:2203031050659@paytm.aujjoys.mongodb.net/PropertyRegistry', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -26,7 +53,7 @@ const propertySchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 const Property = mongoose.model('Property', propertySchema);
 
-const endpoint = 'https://gateway-testnet-arbitrum.network.thegraph.com/api/{api-key}/subgraphs/id/FgZp62jkWu3qkmw82Z5xoWMzQws9xYhHtyUHA5gPmja5';
+const endpoint = 'https://gateway-testnet-arbitrum.network.thegraph.com/api/1d9b0c2d45d634923a3ecea952c8aa04/subgraphs/id/FgZp62jkWu3qkmw82Z5xoWMzQws9xYhHtyUHA5gPmja5';
 
 app.get('/', (req, res) => {
   res.send('Welcome to Property Registry API Server');
@@ -77,7 +104,6 @@ app.get('/properties-with-graph', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch properties', details: error.message });
   }
 });
-
 
 app.get('/confirmations', async (req, res) => {
   const confirmationsQuery = gql`
@@ -165,7 +191,6 @@ app.post('/properties', async (req, res) => {
   }
 });
 
-
 app.get('/properties/:id', async (req, res) => {
   const { id } = req.params;
 
@@ -185,7 +210,6 @@ app.get('/properties/:id', async (req, res) => {
   }
 });
 
-
 app.post('/register-user', async (req, res) => {
   const { walletAddress } = req.body;
 
@@ -196,7 +220,7 @@ app.post('/register-user', async (req, res) => {
       user = new User({ walletAddress });
       await user.save();
     } else {
-      user.testTokens += 100; 
+      user.testTokens += 100;
       await user.save();
     }
 
@@ -204,6 +228,32 @@ app.post('/register-user', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to register user' });
+  }
+});
+
+app.post('/transfer-property', async (req, res) => {
+  const { propertyId, newOwner } = req.body;
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(propertyId)) {
+      console.error('Invalid property ID format');
+      return res.status(400).json({ error: 'Invalid property ID format' });
+    }
+
+    const property = await Property.findById(propertyId);
+    if (!property) {
+      console.error('Property not found');
+      return res.status(404).json({ error: 'Property not found' });
+    }
+
+    console.log(`Transferring property ${propertyId} to new owner ${newOwner}`);
+    await transferProperty(propertyId, newOwner);
+
+    console.log(`Property ${propertyId} successfully transferred to ${newOwner}`);
+    res.json({ message: `Property ${propertyId} transferred to ${newOwner}` });
+  } catch (error) {
+    console.error('Error transferring property:', error);
+    res.status(500).json({ error: 'Failed to transfer property', details: error.message });
   }
 });
 
