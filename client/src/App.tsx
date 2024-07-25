@@ -3,6 +3,7 @@ import AccountCreation from './pages/AccountCreation';
 import PropertyDetail from './components/PropertyDetail';
 import { GraphQueries } from './pages/GraphQueries';
 import Dashboard from './pages/dashboard';
+import ManageProperty from './pages/ManageProperty';
 
 const ProtectedRoute = () => {
   const walletAddress = localStorage.getItem('walletAddress');
@@ -22,6 +23,7 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/queries" element={<GraphQueries />} />
+              <Route path="/manage-property" element={<ManageProperty />} />
               <Route path="/properties/:id" element={<PropertyDetail />} />
             </Route>
             

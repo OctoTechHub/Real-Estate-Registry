@@ -33,6 +33,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Connect to MongoDB
 mongoose.connect('mongodb+srv://krishsoni:2203031050659@paytm.aujjoys.mongodb.net/PropertyRegistry', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -48,6 +49,7 @@ const propertySchema = new mongoose.Schema({
   details: String,
   priceINR: Number,
   priceETH: Number,
+  owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } 
 });
 
 const User = mongoose.model('User', userSchema);
@@ -63,7 +65,7 @@ app.get('/properties-with-graph', async (req, res) => {
   let graphData = [];
   try {
     const graphResponse = await axios.post(
-      'https://gateway-testnet-arbitrum.network.thegraph.com/api/1d9b0c2d45d634923a3ecea952c8aa04/subgraphs/id/FgZp62jkWu3qkmw82Z5xoWMzQws9xYhHtyUHA5gPmja5',
+      endpoint,
       {
         query: `
           {
@@ -88,13 +90,14 @@ app.get('/properties-with-graph', async (req, res) => {
   }
 
   try {
-    const dbProperties = await Property.find().lean();
+    const dbProperties = await Property.find().populate('owner').lean(); 
 
     const combinedProperties = dbProperties.map(dbProperty => {
       const graphProperty = graphData.find(gp => gp.id === dbProperty._id.toString());
       return {
         ...dbProperty,
         ...(graphProperty || {}),
+        owner: dbProperty.owner ? { walletAddress: dbProperty.owner.walletAddress } : null 
       };
     });
 
@@ -102,6 +105,32 @@ app.get('/properties-with-graph', async (req, res) => {
   } catch (error) {
     console.error('Error fetching properties from MongoDB:', error.message);
     res.status(500).json({ error: 'Failed to fetch properties', details: error.message });
+  }
+});
+
+app.get('/properties-by-wallet/:walletAddress', async (req, res) => {
+  const { walletAddress } = req.params;
+  
+  try {
+    const user = await User.findOne({ walletAddress });
+    if (!user) {
+      return res.status(404).json({ message: 'No user found for this wallet address' });
+    }
+
+    const properties = await Property.find({ owner: user._id }).populate('owner').lean(); 
+    
+    if (!Array.isArray(properties)) {
+      return res.status(500).json({ error: 'Invalid data format from backend' });
+    }
+
+    if (properties.length === 0) {
+      return res.status(404).json({ message: 'No properties found for this wallet address' });
+    }
+
+    res.json(properties);
+  } catch (error) {
+    console.error('Error fetching properties by wallet address:', error);
+    res.status(500).json({ error: 'Failed to fetch properties' });
   }
 });
 
@@ -153,7 +182,20 @@ app.post('/properties', async (req, res) => {
       return res.status(400).json({ error: 'Wallet address is required' });
     }
 
-    const property = new Property({ name, details, priceINR, priceETH });
+    // Find or create the user
+    let user = await User.findOne({ walletAddress });
+    if (!user) {
+      user = new User({ walletAddress });
+      await user.save();
+    }
+
+    const property = new Property({
+      name,
+      details,
+      priceINR,
+      priceETH,
+      owner: user._id 
+    });
     await property.save();
 
     const mutation = `
@@ -166,7 +208,7 @@ app.post('/properties', async (req, res) => {
           priceETH: ${priceETH},
           owner: {
             create: {
-              id: "${property._id}",
+              id: "${user._id}",
               walletAddress: "${walletAddress}"
             }
           }
@@ -174,6 +216,9 @@ app.post('/properties', async (req, res) => {
           property {
             id
             name
+            owner {
+              walletAddress
+            }
           }
         }
       }
@@ -199,7 +244,7 @@ app.get('/properties/:id', async (req, res) => {
   }
 
   try {
-    const property = await Property.findById(id);
+    const property = await Property.findById(id).populate('owner');
     if (!property) {
       return res.status(404).json({ error: 'Property not found' });
     }
@@ -236,28 +281,31 @@ app.post('/transfer-property', async (req, res) => {
 
   try {
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
-      console.error('Invalid property ID format');
-      return res.status(400).json({ error: 'Invalid property ID format' });
+      console.error('Invalid property ID');
+      return res.status(400).json({ error: 'Invalid property ID' });
     }
 
-    const property = await Property.findById(propertyId);
+    const property = await Property.findById(propertyId).populate('owner');
     if (!property) {
-      console.error('Property not found');
       return res.status(404).json({ error: 'Property not found' });
     }
 
-    console.log(`Transferring property ${propertyId} to new owner ${newOwner}`);
-    await transferProperty(propertyId, newOwner);
+    const user = await User.findOne({ walletAddress: newOwner });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-    console.log(`Property ${propertyId} successfully transferred to ${newOwner}`);
-    res.json({ message: `Property ${propertyId} transferred to ${newOwner}` });
+    await propertyRegistryContract.transferProperty(propertyId, newOwner);
+    property.owner = user._id;
+    await property.save();
+
+    res.json({ success: true });
   } catch (error) {
-    console.error('Error transferring property:', error);
-    res.status(500).json({ error: 'Failed to transfer property', details: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Failed to transfer property' });
   }
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
 });
