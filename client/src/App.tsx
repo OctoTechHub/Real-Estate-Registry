@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes, Outlet, Navigate } from 'react-router-dom';
 import AccountCreation from './pages/AccountCreation';
-import PropertyDetail from './components/PropertyDetail';
+import PropertyDetail from './components/PropertyList';
 import { GraphQueries } from './pages/GraphQueries';
 import Dashboard from './pages/dashboard';
 import ManageProperty from './pages/ManageProperty';
@@ -25,7 +25,7 @@ function App() {
               <Route path="/queries" element={<GraphQueries />} />
               <Route path="/manage-property" element={<ManageProperty />} />
               <Route path="/properties/:id" element={<PropertyDetail />} />
-            </Route>
+              </Route>
             
           </Routes>
         </main>

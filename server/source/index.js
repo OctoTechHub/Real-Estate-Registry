@@ -281,8 +281,7 @@ app.post('/transfer-property', async (req, res) => {
 
   try {
     if (!mongoose.Types.ObjectId.isValid(propertyId)) {
-      console.error('Invalid property ID');
-      return res.status(400).json({ error: 'Invalid property ID' });
+      return res.status(400).json({ error: 'Invalid property ID format' });
     }
 
     const property = await Property.findById(propertyId).populate('owner');
@@ -292,20 +291,22 @@ app.post('/transfer-property', async (req, res) => {
 
     const user = await User.findOne({ walletAddress: newOwner });
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'New owner not found' });
     }
 
-    await propertyRegistryContract.transferProperty(propertyId, newOwner);
-    property.owner = user._id;
+    await transferProperty(propertyId, newOwner);
+
+    property.owner = user._id; 
     await property.save();
 
-    res.json({ success: true });
+    res.json({ message: 'Property transferred successfully' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to transfer property' });
   }
 });
 
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

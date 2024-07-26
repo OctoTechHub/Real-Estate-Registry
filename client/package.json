@@ -18,14 +18,16 @@
   "dependencies": {
     "@ethersproject/providers": "^5.7.2",
     "@tanstack/react-query": "^5.28.9",
+    "@urql/core": "^5.0.4",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "ethers": "^6.13.1",
-    "graphql": "^16.8.1",
+    "graphql": "^16.9.0",
     "graphql-request": "^6.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.25.1"
+    "react-router-dom": "^6.25.1",
+    "urql": "^4.1.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.2",

@@ -1,5 +1,5 @@
 import Navbar from '../components/Navbar';
-import PropertyList from '../components/PropertyDetail';
+import PropertyList from '../components/PropertyList';
 
 
 
