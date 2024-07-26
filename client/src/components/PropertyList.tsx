@@ -52,16 +52,18 @@ function PropertyList() {
             {property.owner && (
               <p className="text-gray-500 mb-4">Owner: {property.owner.walletAddress}</p>
             )}
-<Link to={`/properties/${property.id}`} className="block w-full text-center py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300">
-  View Details
-</Link>
-
+            <Link 
+              to={`/properties/${property.id}`} 
+              className="block w-full text-center py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition duration-300"
+            >
+              View Details
+            </Link>
           </div>
         ))}
       </div>
     </div>
   );
-}
+}  
 
 export default PropertyList;
 
